@@ -10,16 +10,15 @@ import {
   View,
   Text,
   ScrollView,
+  LogBox
 } from "react-native";
 import ConnectButton from "../components/connectButton";
 import ServoController from "../components/servoController";
 import JoyStick from "../components/joyStick";
 import SensorDataVisualize from "../components/sensorData";
 import base64 from "react-native-base64";
-
 import { BleManager, Device } from "react-native-ble-plx";
 import { styles } from "../../Styles/styles";
-import { LogBox } from "react-native";
 
 LogBox.ignoreLogs(["new NativeEventEmitter"]); // Ignore log notification by message
 LogBox.ignoreAllLogs(); //Ignore all log notifications
@@ -30,17 +29,49 @@ const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
 
 const MESSAGE_UUID = "6d68efe5-04b6-4a85-abc4-c2670b7bf7fd";
 
-const processData = (data) => {
+global.connectedDevice = null
 
+const processData = (data) => {
+  return JSON.parse(data)
+}
+
+export async function sendMessage(message, connectedDevice) {
+  console.log(message)
+  if (connectedDevice) {
+    BLTManager.writeCharacteristicWithResponseForDevice(
+      connectedDevice?.id,
+      SERVICE_UUID,
+      MESSAGE_UUID,
+      base64.encode(message.toString())
+    ).then((characteristic) => {
+      console.log("message sent to :", base64.decode(characteristic.value));
+    });
+  } else {
+    console.warn('not connected')
+  }
+}
+
+export function receiveMessage(device, setSensorData){
+  device.monitorCharacteristicForService(
+  SERVICE_UUID,
+  MESSAGE_UUID,
+  (error, characteristic) => {
+    if (characteristic?.value != null) {
+      var receivedMessage = base64.decode(characteristic?.value)
+      setSensorData(processData(receivedMessage))
+      console.log(
+        "Message update received: ",
+        base64.decode(characteristic?.value)
+      );
+    }
+  },
+  "messagetransaction"
+);
 }
 
 export default function Home() {
-  //Is a device connected?
   const [isConnected, setIsConnected] = useState(false);
-
-  //What device is connected?
   const [connectedDevice, setConnectedDevice] = useState();
-
   const [sensorData, setSensorData] = useState({
     temp: 29.5,
     humid: 30,
@@ -67,7 +98,7 @@ export default function Home() {
         if (error) {
           console.warn(error);
         }
-
+        console.log(scannedDevice ? scannedDevice.name : '')
         if (scannedDevice && scannedDevice.name === "Durbar") {
           BLTManager.stopDeviceScan();
           connectDevice(scannedDevice);
@@ -103,21 +134,6 @@ export default function Home() {
     }
   }
 
-  async function sendMessage(message) {
-    if (isConnected) {
-      BLTManager.writeCharacteristicWithResponseForDevice(
-        connectedDevice?.id,
-        SERVICE_UUID,
-        MESSAGE_UUID,
-        base64.encode(message.toString())
-      ).then((characteristic) => {
-        console.log("message sent to :", base64.decode(characteristic.value));
-      });
-    } else {
-      console.warn("not connected");
-    }
-  }
-
   //Connect the device and start monitoring characteristics
   async function connectDevice(device) {
     console.log("connecting to Device:", device.name);
@@ -126,6 +142,7 @@ export default function Home() {
       .connect()
       .then((device) => {
         setConnectedDevice(device);
+        global.connectedDevice = device
         setIsConnected(true);
         return device.discoverAllServicesAndCharacteristics();
       })
@@ -145,23 +162,7 @@ export default function Home() {
             setSensorData(base64.decode(valenc?.value));
           });
 
-        //monitor values and tell what to do when receiving an update
-
-        //Message
-        device.monitorCharacteristicForService(
-          SERVICE_UUID,
-          MESSAGE_UUID,
-          (error, characteristic) => {
-            if (characteristic?.value != null) {
-              setSensorData(base64.decode(characteristic?.value));
-              console.log(
-                "Message update received: ",
-                base64.decode(characteristic?.value)
-              );
-            }
-          },
-          "messagetransaction"
-        );
+        receiveMessage(device, setSensorData)
 
         console.log("Connection established");
       });
@@ -175,7 +176,7 @@ export default function Home() {
         disconnectDevice={disconnectDevice}
       />
       <JoyStick sendVal={sendMessage} />
-      <ServoController sendVal={sendMessage} />
+      <ServoController sendVal={sendMessage} connectedDevice={connectedDevice}/>
       <SensorDataVisualize sensorData={sensorData} />
     </ScrollView>
   );

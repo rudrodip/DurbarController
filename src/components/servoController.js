@@ -5,8 +5,11 @@ import Slider from "@react-native-community/slider";
 export default function ServoController(props) {
   const [positions, setPositions] = useState({
     base: 90,
+    shoulder: 0,
+    elbow: 0,
     wristPitch: 90,
     wristRoll: 90,
+    gripper: 0,
   });
 
   const handleChange = (servo, pos) => {
@@ -18,24 +21,48 @@ export default function ServoController(props) {
           return position;
         });
         break;
+      case 2:
+        setPositions((prevState) => {
+          let position = { ...prevState };
+          position.shoulder = pos;
+          return position;
+        });
+        break;
+      case 3:
+        setPositions((prevState) => {
+          let position = { ...prevState };
+          position.elbow = pos;
+          return position;
+        });
+        break;
+
       case 4:
         setPositions((prevState) => {
           let position = { ...prevState };
           position.wristPitch = pos;
           return position;
         });
+        break;
       case 5:
         setPositions((prevState) => {
           let position = { ...prevState };
           position.wristRoll = pos;
           return position;
         });
+        break;
+      case 6:
+        setPositions((prevState) => {
+          let position = { ...prevState };
+          position.gripper = pos;
+          return position;
+        });
+        break;
       default:
         break;
     }
     var cmd = "s" + servo + pos;
     console.log(cmd);
-    props.sendVal(cmd);
+    props.sendVal(cmd, props.connectedDevice);
   };
 
   return (
@@ -56,6 +83,7 @@ export default function ServoController(props) {
           minColor="#6B5CA5"
           maxColor="#71A9F7"
           thumbColor="#C6D8FF"
+          val={positions.shoulder}
         />
         <ServoSlider
           name="Elbow"
@@ -63,6 +91,7 @@ export default function ServoController(props) {
           minColor="#F40076"
           maxColor="#EBA6A9"
           thumbColor="#002A32"
+          val={positions.elbow}
         />
         <ServoSlider
           name="Wrist Pitch"
@@ -86,14 +115,22 @@ export default function ServoController(props) {
           minColor="#F17105"
           maxColor="#F7C59F"
           thumbColor="#FF7733"
+          val={positions.gripper}
         />
-        <TouchableOpacity style={{ width: 150, alignItems: 'center' }}>
+        <TouchableOpacity style={{ width: 150, alignItems: "center" }}>
           <Button
             title="Reset Positions"
             disabled={false}
             color="#06AED5"
             onPress={() =>
-              setPositions({ base: 90, wristPitch: 90, wristRoll: 90 })
+              setPositions({
+                base: 90,
+                shoulder: 0,
+                elbow: 0,
+                wristPitch: 90,
+                wristRoll: 90,
+                gripper: 0,
+              })
             }
           />
         </TouchableOpacity>
