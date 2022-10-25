@@ -41,7 +41,7 @@ const processData = (data) => {
       humid: 0,
       smoke: 0
     }
-    if (sensorData.length == 4){
+    if (sensorData.length >= 4){
 
       sensorDataObject.temp = sensorData[0];
       sensorDataObject.humid = sensorData[1];
