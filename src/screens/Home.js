@@ -41,9 +41,13 @@ const processData = (data) => {
       humid: 0,
       smoke: 0
     }
-    sensorDataObject.temp = sensorData[0];
-    sensorDataObject.humid = sensorData[1];
-    sensorDataObject.smoke = sensorData[2];
+    if (sensorData.length == 4){
+
+      sensorDataObject.temp = sensorData[0];
+      sensorDataObject.humid = sensorData[1];
+      sensorDataObject.smoke = sensorData[2];
+      sensorDataObject.sonar = sensorData[3];
+    }
     return sensorDataObject
   }
   return 0;
@@ -87,6 +91,7 @@ export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
   const [connectedDevice, setConnectedDevice] = useState();
   const [sensorData, setSensorData] = useState('');
+  const [recvText, setRecvText] = useState('')
 
   // Scans availbale BLT Devices and then call connectDevice
   async function scanDevices() {
@@ -182,6 +187,7 @@ export default function Home() {
               if (processData(receivedMessage)){
                 setSensorData(processData(receivedMessage))
               }
+              setRecvText(receivedMessage)
               console.log(
                 "Message update received: ",
                 receivedMessage
@@ -205,6 +211,11 @@ export default function Home() {
       <JoyStick sendVal={sendMessage} />
       <ServoController sendVal={sendMessage} connectedDevice={connectedDevice}/>
       <SensorDataVisualize sensorData={sensorData} />
+      <View style={{margin: 15}}>
+        <Text style={{color: 'yellow', fontSize: 10, textAlign: 'center'}}>
+          {`Log: ${recvText.toString()}`}
+        </Text>
+      </View>
     </ScrollView>
   );
 }

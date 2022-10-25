@@ -218,14 +218,13 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        release {
+    release {
       storeFile file('durbar.keystore')
       storePassword 'Rudrodipsarker625'
-      keyAlias 'durbarController'
+      keyAlias 'durbarControllers'
       keyPassword 'Rudrodipsarker625'
     }
   }
-    }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
