@@ -8,52 +8,74 @@ import {
   TouchableOpacity,
   FlatList,
   ScrollView,
+  Alert,
 } from "react-native";
-import RNFS, { read } from "react-native-fs";
+import RNFS from "react-native-fs";
 import { sendMessage } from "./Home";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { styles } from "../../Styles/command";
+const filePath = RNFS.DocumentDirectoryPath; //absolute path of our file
+
+const makeFile = async (filePath, content) => {
+  try {
+    await RNFS.writeFile(filePath, content, "utf8");
+    console.log("written to file");
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const deleteFile = async (path) => {
+  try {
+    await RNFS.unlink(path); //delete the item present at 'path'
+    console.log("file deleted");
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const handleExecute = (val, device) => {
+  if (!val) {
+    return;
+  }
+  const cmdArray = val.split("\n");
+  for (let i = 0; i < cmdArray.length; i++) {
+    sendMessage(cmdArray[i], device);
+  }
+};
 
 const Command = () => {
   const [cmd, setCmd] = useState("");
   const [cmdName, setCmdName] = useState("");
   const [files, setFiles] = useState([]);
   const [fileData, setFileData] = useState([]);
-  const filePath = RNFS.DocumentDirectoryPath; //absolute path of our file
-
-  const makeFile = async (filePath, content) => {
-    try {
-      await RNFS.writeFile(filePath, content, "utf8");
-      console.log("written to file");
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const readFile = async (path) => {
-    const response = await RNFS.readFile(path);
-    return response;
-  };
 
   const getFileContent = async (path) => {
     const reader = await RNFS.readDir(path);
     setFiles(reader);
   };
 
-  const handleExecute = (val, device) => {
-    const cmdArray = val.split("\n");
-    for (let i = 0; i < cmdArray.length; i++) {
-      sendMessage(cmdArray[i], device);
-    }
-  };
-
   const saveCommand = (name, cmdVal) => {
     const cmdFilePath = `${filePath}/${name}.durbar`;
-    makeFile(cmdFilePath, cmdVal);
+    if (!name) {
+      Alert.alert(
+        "Name missing",
+        "Please enter a command name for saving",
+      );
+    } else if (!cmdVal) {
+      Alert.alert(
+        "Command Missing",
+        "Please enter command script",
+      );
+    } else {
+      makeFile(cmdFilePath, cmdVal);
+    }
   };
 
   const getSavedCommands = () => {
     getFileContent(RNFS.DocumentDirectoryPath); // getting all files in directory
+    console.log(files)
     let tempfileData = []; // initializing temp file data array
-
     files.map(async (file) => {
       // mapping every element in files array got from getFileContent() function
       if (file.name.endsWith(".durbar")) {
@@ -62,9 +84,11 @@ const Command = () => {
         cmdObject.name = file.name; // assigning name to command file
         cmdObject.content = await RNFS.readFile(file.path); // reading the file content and assigning to content property of cmdObject
         tempfileData.push(cmdObject); // pushing object to temp array
-        setFileData(tempfileData); // setting file data
       }
     });
+    setFileData(tempfileData); // setting file data
+    console.log(fileData)
+    
   };
 
   return (
@@ -104,6 +128,7 @@ const Command = () => {
           val={cmd}
         />
       </View>
+      <Text style={styles.heading}>Saved Commands</Text>
       <FlatList
         data={fileData}
         renderItem={renderItem}
@@ -114,60 +139,6 @@ const Command = () => {
 };
 
 export default Command;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    marginVertical: 30,
-  },
-  heading: {
-    color: "white",
-    marginHorizontal: 10,
-    fontWeight: "bold",
-    textAlign: "center",
-    fontSize: 20,
-  },
-  input: {
-    height: 100,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-    borderColor: "white",
-    color: "white",
-  },
-  button: {
-    alignItems: "center",
-    backgroundColor: "#6CD4FF",
-    padding: 10,
-    margin: 12,
-  },
-  name: {
-    color: "white",
-  },
-  label: {
-    color: "white",
-    marginHorizontal: 10,
-    fontSize: 15,
-    margin: 10,
-  },
-  item: {
-    backgroundColor: "#53B3CB",
-    padding: 20,
-    marginVertical: 8,
-    marginHorizontal: 16,
-  },
-  title: {
-    fontSize: 14,
-    color: "#000000",
-    fontWeight: "bold",
-    textDecorationLine: "underline",
-  },
-  script: {
-    fontSize: 14,
-    color: "#2D3142",
-    fontStyle: "italic",
-  },
-});
 
 const CustomButton = ({ name, handleChange, val, device = null }) => {
   return (
@@ -184,9 +155,14 @@ const CustomButton = ({ name, handleChange, val, device = null }) => {
 
 const Item = ({ name, content }) => (
   <View style={styles.item}>
-    <TouchableOpacity>
+    <TouchableOpacity
+      onPress={() => handleExecute(content, global.connectedDevice)}
+    >
       <Text style={styles.title}>{name}</Text>
       <Text style={styles.script}>{content}</Text>
+    </TouchableOpacity>
+    <TouchableOpacity onPress={() => deleteFile(`${filePath}/${name}`)}>
+      <MaterialIcons name="delete" color="#D84727" size={30} />
     </TouchableOpacity>
   </View>
 );

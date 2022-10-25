@@ -39,7 +39,7 @@ const BottomTab = ({ route, navigation }) => {
           ),
         }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Map"
         component={Map}
         options={{
@@ -47,7 +47,7 @@ const BottomTab = ({ route, navigation }) => {
             <MaterialIcons name="map" size={size} color={color} />
           ),
         }}
-      />
+      /> */}
     </Tab.Navigator>
   );
 };

@@ -10,28 +10,28 @@ export default function SensorDataVisualize(props) {
         minVal="0"
         maxVal="100"
         color="#06D6A0"
-        val={props.sensorData.temp}
+        val={props?.sensorData?.temp}
       />
       <DynamicBar
         name="Humidity"
         minVal="10"
         maxVal="100"
         color="#118AB2"
-        val={props.sensorData.humid}
+        val={props?.sensorData?.humid}
       />
       <DynamicBar
         name="Smoke presence"
         minVal="0"
-        maxVal="100"
+        maxVal="1023"
         color="#DE3C4B"
-        val={props.sensorData.smoke}
+        val={props?.sensorData?.smoke}
       />
       <DynamicBar
         name="Sonar"
         minVal="0"
         maxVal="20"
         color="#FE5F55"
-        val={props.sensorData.sonar}
+        val={props?.sensorData?.sonar}
       />
     </View>
   );
@@ -42,7 +42,7 @@ const DynamicBar = (props) => {
   var relativeVal = `${relativeVal}%`
   return (
     <View>
-      <Text style={{ ...styles.title, color: props.color }}>{props.name}</Text>
+      <Text style={{ ...styles.title, color: props.color }}>{`${props.name} (${[props.val]})`}</Text>
       <View>
         <View
           style={{

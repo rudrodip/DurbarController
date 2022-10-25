@@ -7,10 +7,10 @@ export default function JoyStick(props) {
     var dirKey = dir.toLowerCase()[0];
     if (pressState == 'in'){
         cmd = 'm' + dirKey
-        props.sendVal(cmd)
+        props.sendVal(cmd, global.connectedDevice)
     } else {
         cmd = 'ms'
-        props.sendVal(cmd)
+        props.sendVal(cmd, global.connectedDevice)
     }
     console.log(cmd);
   };

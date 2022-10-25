@@ -3,59 +3,42 @@ import { View, Text, StyleSheet, Button, TouchableOpacity } from "react-native";
 import Slider from "@react-native-community/slider";
 
 export default function ServoController(props) {
-  const [positions, setPositions] = useState({
-    base: 90,
-    shoulder: 0,
-    elbow: 0,
-    wristPitch: 90,
-    wristRoll: 90,
-    gripper: 0,
-  });
+  const [base, setBase] = useState(90);
+  const [shoulder, setShoulder] = useState(0);
+  const [elbow, setElbow] = useState(0);
+  const [wristPitch, setWristPitch] = useState(90);
+  const [wristRoll, setWristRoll] = useState(90);
+  const [gripper, setGripper] = useState(0);
+
+  const handleReset = () => {
+    setBase(90);
+    setShoulder(0);
+    setElbow(0);
+    setWristPitch(90);
+    setWristRoll(90);
+    setGripper(0);
+    props.sendVal("close", props.connectedDevice);
+  }
 
   const handleChange = (servo, pos) => {
     switch (servo) {
       case 1:
-        setPositions((prevState) => {
-          let position = { ...prevState };
-          position.base = pos;
-          return position;
-        });
+        setBase(pos);
         break;
       case 2:
-        setPositions((prevState) => {
-          let position = { ...prevState };
-          position.shoulder = pos;
-          return position;
-        });
+        setShoulder(pos);
         break;
       case 3:
-        setPositions((prevState) => {
-          let position = { ...prevState };
-          position.elbow = pos;
-          return position;
-        });
+        setElbow(pos);
         break;
-
       case 4:
-        setPositions((prevState) => {
-          let position = { ...prevState };
-          position.wristPitch = pos;
-          return position;
-        });
+        setWristPitch(pos);
         break;
       case 5:
-        setPositions((prevState) => {
-          let position = { ...prevState };
-          position.wristRoll = pos;
-          return position;
-        });
+        setWristRoll(pos);
         break;
       case 6:
-        setPositions((prevState) => {
-          let position = { ...prevState };
-          position.gripper = pos;
-          return position;
-        });
+        setGripper(pos);
         break;
       default:
         break;
@@ -75,7 +58,7 @@ export default function ServoController(props) {
           minColor="#F17105"
           maxColor="#F7C59F"
           thumbColor="#FF7733"
-          val={positions.base}
+          val={base}
         />
         <ServoSlider
           name="Shoulder"
@@ -83,7 +66,7 @@ export default function ServoController(props) {
           minColor="#6B5CA5"
           maxColor="#71A9F7"
           thumbColor="#C6D8FF"
-          val={positions.shoulder}
+          val={shoulder}
         />
         <ServoSlider
           name="Elbow"
@@ -91,7 +74,7 @@ export default function ServoController(props) {
           minColor="#F40076"
           maxColor="#EBA6A9"
           thumbColor="#002A32"
-          val={positions.elbow}
+          val={elbow}
         />
         <ServoSlider
           name="Wrist Pitch"
@@ -99,7 +82,7 @@ export default function ServoController(props) {
           minColor="#8CC084"
           maxColor="#C1D7AE"
           thumbColor="#95BF74"
-          val={positions.wristPitch}
+          val={wristPitch}
         />
         <ServoSlider
           name="Writst Roll"
@@ -107,7 +90,7 @@ export default function ServoController(props) {
           minColor="#F17105"
           maxColor="#F7C59F"
           thumbColor="#FF7733"
-          val={positions.wristRoll}
+          val={wristRoll}
         />
         <ServoSlider
           name="Gripper"
@@ -115,23 +98,14 @@ export default function ServoController(props) {
           minColor="#F17105"
           maxColor="#F7C59F"
           thumbColor="#FF7733"
-          val={positions.gripper}
+          val={gripper}
         />
         <TouchableOpacity style={{ width: 150, alignItems: "center" }}>
           <Button
             title="Reset Positions"
             disabled={false}
             color="#06AED5"
-            onPress={() =>
-              setPositions({
-                base: 90,
-                shoulder: 0,
-                elbow: 0,
-                wristPitch: 90,
-                wristRoll: 90,
-                gripper: 0,
-              })
-            }
+            onPress={handleReset}
           />
         </TouchableOpacity>
       </View>
@@ -149,7 +123,7 @@ const ServoSlider = (props) => {
           fontWeight: "bold",
         }}
       >
-        {props.name}
+        {`${props.name} (${props.val ? props.val : 0})`}
       </Text>
       <Slider
         style={{ width: "100%", height: 40 }}

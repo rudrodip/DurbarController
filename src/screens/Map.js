@@ -36,7 +36,7 @@ class Map extends Component {
   render() {
     return (
       <View style={{ width: "100%" }}>
-        <Text style={styles.heading}>Map geneator</Text>
+        <Text style={styles.heading}>Map generator</Text>
         <Canvas ref={this.handleCanvas} style={{ width: "100%" }} />
       </View>
     );

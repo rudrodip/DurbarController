@@ -10,7 +10,8 @@ import {
   View,
   Text,
   ScrollView,
-  LogBox
+  LogBox,
+  Alert
 } from "react-native";
 import ConnectButton from "../components/connectButton";
 import ServoController from "../components/servoController";
@@ -32,7 +33,20 @@ const MESSAGE_UUID = "6d68efe5-04b6-4a85-abc4-c2670b7bf7fd";
 global.connectedDevice = null
 
 const processData = (data) => {
-  return JSON.parse(data)
+  if (data[0] == "t"){
+    var sensorData = data.replace("t", "");
+    sensorData = sensorData.split("-");
+    let sensorDataObject = {
+      temp: 0,
+      humid: 0,
+      smoke: 0
+    }
+    sensorDataObject.temp = sensorData[0];
+    sensorDataObject.humid = sensorData[1];
+    sensorDataObject.smoke = sensorData[2];
+    return sensorDataObject
+  }
+  return 0;
 }
 
 export async function sendMessage(message, connectedDevice) {
@@ -72,12 +86,7 @@ export function receiveMessage(device, setSensorData){
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
   const [connectedDevice, setConnectedDevice] = useState();
-  const [sensorData, setSensorData] = useState({
-    temp: 29.5,
-    humid: 30,
-    smoke: 63.5,
-    sonar: 15,
-  });
+  const [sensorData, setSensorData] = useState('');
 
   // Scans availbale BLT Devices and then call connectDevice
   async function scanDevices() {
@@ -97,6 +106,7 @@ export default function Home() {
       BLTManager.startDeviceScan(null, null, (error, scannedDevice) => {
         if (error) {
           console.warn(error);
+          Alert.alert("BLE Error", error.toString());
         }
         console.log(scannedDevice ? scannedDevice.name : '')
         if (scannedDevice && scannedDevice.name === "Durbar") {
@@ -162,7 +172,24 @@ export default function Home() {
             setSensorData(base64.decode(valenc?.value));
           });
 
-        receiveMessage(device, setSensorData)
+        // receiveMessage(device, setSensorData)
+        device.monitorCharacteristicForService(
+          SERVICE_UUID,
+          MESSAGE_UUID,
+          (error, characteristic) => {
+            if (characteristic?.value != null) {
+              var receivedMessage = base64.decode(characteristic?.value)
+              if (processData(receivedMessage)){
+                setSensorData(processData(receivedMessage))
+              }
+              console.log(
+                "Message update received: ",
+                receivedMessage
+              );
+            }
+          },
+          "messagetransaction"
+        );
 
         console.log("Connection established");
       });
