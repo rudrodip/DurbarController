@@ -5,6 +5,7 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Home from "../screens/Home";
 import Map from "../screens/Map";
 import Command from "../screens/Command";
+import Docs from "../screens/Docs";
 
 const Tab = createBottomTabNavigator();
 
@@ -48,6 +49,15 @@ const BottomTab = ({ route, navigation }) => {
           ),
         }}
       /> */}
+      <Tab.Screen
+        name="About"
+        component={Docs}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="about" size={size} color={color} />
+          ),
+        }}
+      />
     </Tab.Navigator>
   );
 };

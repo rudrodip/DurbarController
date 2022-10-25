@@ -30,6 +30,7 @@ export const styles = StyleSheet.create({
   },
   name: {
     color: "white",
+    margin: 3
   },
   label: {
     color: "white",

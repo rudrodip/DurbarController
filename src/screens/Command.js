@@ -3,11 +3,8 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
-  Button,
   TouchableOpacity,
   FlatList,
-  ScrollView,
   Alert,
 } from "react-native";
 import RNFS from "react-native-fs";
